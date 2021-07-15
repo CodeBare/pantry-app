@@ -4,16 +4,13 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const config = (require('dotenv')).config;
 const firebaseAuth = require('./firebase/firebase-auth');
+const headerSetup = require('./router-middleware/header-setup')
+const userResolver = require('./router-middleware/user-resolver')
 
 config()
 
-
-const app = express();
-const router = express.Router();
-
-const headers_first = 'Origin, X-Requested-With, Content-Type, Accept';
-const headers_second = 'Authorization, Access-Control-Allow-Credentials, x-access-token';
 const whitelist = process.env.CLIENT_URL ? [process.env.CLIENT_URL] : [];
+const app = express();
 
 const corsOptionsDelegate = (req, callback) => {
     const corsOptions = {}
@@ -48,22 +45,9 @@ const clientHeaderOrigin = process.env.CLIENT_URL ? process.env.CLIENT_URL : nul
 
 app.use(cors(corsOptionsDelegate));
 
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if(whitelist.indexOf(origin) > -1) {
-        res.header('Access-Control-Allow-Origin', origin)
-    } else if(clientHeaderOrigin) {
-        res.header('Access-Control-Allow-Origin', clientHeaderOrigin)
-    }
-
-    res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, PATCH, OPTIONS, PUT');
-    res.header('Access-Control-Allow-Headers', `${headers_first}, ${headers_second}`);
-    res.header('Access-Control-Allow-Credentials', 'true');
-
-    next();
-})
-
+app.use(headerSetup);
 app.use(firebaseAuth);
+app.use(userResolver);
 
 // stub for api routes
 // app.use('/api', null);
