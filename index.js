@@ -6,6 +6,7 @@ const config = (require('dotenv')).config;
 const firebaseAuth = require('./firebase/firebase-auth');
 const headerSetup = require('./router-middleware/header-setup')
 const userResolver = require('./router-middleware/user-resolver')
+const UserRouter = require('./routes/UserRoutes')
 
 config()
 
@@ -50,7 +51,7 @@ app.use(firebaseAuth);
 app.use(userResolver);
 
 // stub for api routes
-// app.use('/api', null);
+app.use('/api/user', UserRouter);
 
 // Get all other routes and send a response.
 // Eventually replace with API documentation.
